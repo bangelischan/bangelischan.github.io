@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Bundle Buster: sorry to see you go</title>
+<style>
+  :root {
+    --bg: #f3f1ec; --card: #ffffff; --text: #141413; --muted: #5d5a53; --line: #dcd8cf;
+    --accent: #e8433d; --accent-dark: #c9332d; --ok: #1d7a3a; --err: #b3261e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #17160f; --card: #22211a; --text: #f3f1ec; --muted: #b3afa4; --line: #3a382e; --ok: #5fcf80; --err: #ff8a80; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main {
+    width: 100%; max-width: 560px; background: var(--card); border-radius: 20px; padding: 32px 28px;
+    box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.35);
+  }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  header img { width: 52px; height: 52px; border-radius: 13px; }
+  h1 { margin: 0; font-size: 1.5rem; line-height: 1.2; }
+  p { margin: 12px 0; }
+  .muted { color: var(--muted); font-size: 0.9rem; }
+  fieldset { border: 0; padding: 0; margin: 20px 0 0; }
+  legend { font-weight: 700; padding: 0; margin-bottom: 8px; }
+  .reason { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; cursor: pointer; }
+  .reason input { margin-top: 4px; width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--accent); }
+  label.field { display: block; font-weight: 700; margin-top: 20px; }
+  label.field span { font-weight: 400; color: var(--muted); }
+  textarea, input[type="email"] {
+    width: 100%; margin-top: 6px; padding: 10px 12px; font: inherit; color: inherit;
+    background: transparent; border: 1px solid var(--line); border-radius: 10px;
+  }
+  textarea { min-height: 110px; resize: vertical; }
+  textarea:focus, input:focus-visible, button:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px;
+  }
+  button {
+    margin-top: 24px; width: 100%; padding: 13px; font: inherit; font-weight: 700; color: #fff;
+    background: var(--accent); border: 0; border-radius: 12px; cursor: pointer;
+  }
+  button:hover { background: var(--accent-dark); }
+  button:disabled { opacity: 0.6; cursor: default; }
+  #status { margin-top: 14px; min-height: 1.4em; font-weight: 600; }
+  #status.ok { color: var(--ok); }
+  #status.err { color: var(--err); }
+  .trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  #thanks { display: none; text-align: center; padding: 24px 0 8px; }
+  #thanks h2 { margin: 0 0 8px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="icon128.png" alt="">
+    <h1>Sorry to see you go</h1>
+  </header>
+
+  <div id="formView">
+    <p>Bundle Buster was uninstalled. If you have a minute, tell me why. I read every answer and use it to make the extension better. Everything below is optional.</p>
+
+    <form id="feedback" novalidate>
+      <fieldset>
+        <legend>Why did you uninstall it?</legend>
+        <label class="reason"><input type="checkbox" name="reason" value="Bundle deals pages still showed up"> Bundle deals pages still showed up</label>
+        <label class="reason"><input type="checkbox" name="reason" value="It broke a page or something stopped working"> It broke a page or something stopped working</label>
+        <label class="reason"><input type="checkbox" name="reason" value="Slowed down my browser"> It slowed down my browser</label>
+        <label class="reason"><input type="checkbox" name="reason" value="I don't want the affiliate link"> I don't want the affiliate link</label>
+        <label class="reason"><input type="checkbox" name="reason" value="Privacy concerns"> Privacy concerns</label>
+        <label class="reason"><input type="checkbox" name="reason" value="Found a better alternative"> I found a better alternative</label>
+        <label class="reason"><input type="checkbox" name="reason" value="I don't shop on AliExpress anymore"> I don't shop on AliExpress anymore</label>
+        <label class="reason"><input type="checkbox" name="reason" value="Other"> Other</label>
+      </fieldset>
+
+      <label class="field" for="message">Anything else I should know? <span>(optional)</span></label>
+      <textarea id="message" name="message" maxlength="2000" placeholder="What went wrong, or what would have made you stay?"></textarea>
+
+      <label class="field" for="email">Your email <span>(optional, only if you would like a reply)</span></label>
+      <input id="email" name="email" type="email" autocomplete="email" maxlength="200" placeholder="you@example.com">
+
+      <div class="trap" aria-hidden="true">
+        <label>Leave this empty <input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
+      </div>
+      <input type="hidden" name="_subject" value="Bundle Buster uninstall feedback">
+
+      <button id="send" type="submit">Send feedback</button>
+      <div id="status" role="status" aria-live="polite"></div>
+    </form>
+
+    <p class="muted">Your answer is emailed to me through Formspree, a form service. It is used only to improve Bundle Buster and is never sold or shared. Please don't include anything personal you don't want me to see.</p>
+  </div>
+
+  <div id="thanks" role="status">
+    <h2>Thank you!</h2>
+    <p>Your feedback was sent. I appreciate it.</p>
+  </div>
+</main>
+
+<script>
+  // Create a free form at https://formspree.io and paste its endpoint here. Submissions
+  // are emailed to the address on your Formspree account.
+  const FORM_ENDPOINT = 'https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID';
+
+  const form = document.getElementById('feedback');
+  const send = document.getElementById('send');
+  const status = document.getElementById('status');
+
+  function setStatus(text, kind) {
+    status.textContent = text;
+    status.className = kind || '';
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+
+    if (data.get('_gotcha')) return; // a bot filled the hidden field
+
+    const hasReason = data.getAll('reason').length > 0;
+    const hasMessage = String(data.get('message') || '').trim().length > 0;
+    if (!hasReason && !hasMessage) {
+      setStatus('Please pick a reason or write a short message.', 'err');
+      return;
+    }
+    if (FORM_ENDPOINT.includes('REPLACE_WITH')) {
+      setStatus('The feedback form is not set up yet. Sorry!', 'err');
+      return;
+    }
+
+    send.disabled = true;
+    setStatus('Sending...');
+    try {
+      const response = await fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        body: data,
+        headers: { Accept: 'application/json' },
+      });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      document.getElementById('formView').style.display = 'none';
+      document.getElementById('thanks').style.display = 'block';
+    } catch (error) {
+      send.disabled = false;
+      setStatus('Sorry, that did not go through. Please try again in a moment.', 'err');
+    }
+  });
+</script>
+</body>
+</html>
