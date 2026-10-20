@@ -94,7 +94,7 @@
       <div id="status" role="status" aria-live="polite"></div>
     </form>
 
-    <p class="muted">Your answer is emailed to me through Formspree, a form service. It is used only to improve Bundle Buster and is never sold or shared. Please don't include anything personal you don't want me to see.</p>
+    <p class="muted">Your answer is emailed to me through Formspree, a form service. It is used only to improve Bundle Buster and is never sold or shared. Please don't include anything personal you don't want me to see. To help me find the problem, the form also sends your browser and its version, your operating system, language and time zone.</p>
   </div>
 
   <div id="thanks" role="status">
@@ -117,11 +117,41 @@
     status.className = kind || '';
   }
 
+  // Browser, its version, OS, language and time zone (the time zone gives a rough
+  // idea of the country). Also copies any details the extension may add to this
+  // page's address later (e.g. ?v=1.0.6), so the form doesn't need to change again.
+  function addDetails(data) {
+    const ua = navigator.userAgent;
+    const browser =
+      (ua.match(/Edg\/([\d.]+)/) && 'Edge ' + RegExp.$1) ||
+      (ua.match(/OPR\/([\d.]+)/) && 'Opera ' + RegExp.$1) ||
+      (ua.match(/Firefox\/([\d.]+)/) && 'Firefox ' + RegExp.$1) ||
+      (ua.match(/Chrome\/([\d.]+)/) && 'Chrome ' + RegExp.$1) ||
+      'Other';
+    const os =
+      (/Android/.test(ua) && 'Android') || (/iPhone|iPad/.test(ua) && 'iOS') ||
+      (/Windows/.test(ua) && 'Windows') || (/Mac OS X/.test(ua) && 'macOS') ||
+      (/CrOS/.test(ua) && 'ChromeOS') || (/Linux/.test(ua) && 'Linux') || 'Other';
+    let timeZone = '';
+    try { timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+    data.append('browser', browser);
+    data.append('os', os);
+    data.append('language', navigator.language || '');
+    data.append('time_zone', timeZone);
+    for (const [key, value] of new URLSearchParams(location.search)) {
+      if (/^[a-z_]{1,20}$/i.test(key)) data.append('ext_' + key, String(value).slice(0, 100));
+    }
+  }
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const data = new FormData(form);
 
     if (data.get('_gotcha')) return; // a bot filled the hidden field
+
+    // Technical details, sent only with the feedback (nothing is sent if the
+    // form isn't submitted). No IP address, no location from the device.
+    addDetails(data);
 
     const hasReason = data.getAll('reason').length > 0;
     const hasMessage = String(data.get('message') || '').trim().length > 0;
