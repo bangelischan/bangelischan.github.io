@@ -9,10 +9,10 @@
 <style>
   :root {
     --bg: #f3f1ec; --card: #ffffff; --text: #141413; --muted: #5d5a53; --line: #dcd8cf;
-    --accent: #e8433d; --accent-dark: #c9332d; --ok: #1d7a3a; --err: #b3261e;
+    --accent: #e8433d; --accent-dark: #c9332d; --ok: #1d7a3a; --err: #b3261e; --link: #c9332d;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #17160f; --card: #22211a; --text: #f3f1ec; --muted: #b3afa4; --line: #3a382e; --ok: #5fcf80; --err: #ff8a80; }
+    :root { --bg: #17160f; --card: #22211a; --text: #f3f1ec; --muted: #b3afa4; --line: #3a382e; --ok: #5fcf80; --err: #ff8a80; --link: #ff8a7a; }
   }
   * { box-sizing: border-box; }
   body {
@@ -29,6 +29,8 @@
   h1 { margin: 0; font-size: 1.5rem; line-height: 1.2; }
   p { margin: 12px 0; }
   .muted { color: var(--muted); font-size: 0.9rem; }
+  a { color: var(--link); text-underline-offset: 0.15em; }
+  a:hover { text-decoration-thickness: 2px; }
   fieldset { border: 0; padding: 0; margin: 20px 0 0; }
   legend { font-weight: 700; padding: 0; margin-bottom: 8px; }
   .reason { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; cursor: pointer; }
