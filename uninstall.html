@@ -37,7 +37,13 @@
   .reason input { margin-top: 4px; width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--accent); }
   label.field { display: block; font-weight: 700; margin-top: 20px; }
   label.field span { font-weight: 400; color: var(--muted); }
-  textarea, input[type="email"] {
+  .followup { display: none; margin: 0 0 8px 9px; padding: 2px 0 4px 18px; border-left: 3px solid var(--line); }
+  .followup.open { display: block; }
+  .followup .q { font-weight: 700; margin: 12px 0 2px; font-size: 0.95rem; }
+  .followup .reason { padding: 5px 0; font-size: 0.95rem; }
+  #fu-link { margin-left: 0; padding-left: 0; border-left: 0; }
+  .hint { color: var(--muted); font-size: 0.85rem; margin: 6px 0 0; }
+  textarea, input[type="email"], input[type="url"] {
     width: 100%; margin-top: 6px; padding: 10px 12px; font: inherit; color: inherit;
     background: transparent; border: 1px solid var(--line); border-radius: 10px;
   }
@@ -72,8 +78,15 @@
     <form id="feedback" novalidate>
       <fieldset>
         <legend>Why did you uninstall it?</legend>
-        <label class="reason"><input type="checkbox" name="reason" value="Bundle deals pages still showed up"> Bundle deals pages still showed up</label>
-        <label class="reason"><input type="checkbox" name="reason" value="It broke a page or something stopped working"> It broke a page or something stopped working</label>
+        <label class="reason"><input type="checkbox" name="reason" value="Bundle deals pages still showed up" data-followup="fu-bundle fu-link"> Bundle deals pages still showed up</label>
+        <div class="followup" id="fu-bundle">
+          <p class="q">Where did you see it?</p>
+          <label class="reason"><input type="radio" name="bundle_where" value="After clicking a product in search"> After clicking a product in search</label>
+          <label class="reason"><input type="radio" name="bundle_where" value="After clicking a link from outside AliExpress"> After clicking a link from outside AliExpress</label>
+          <label class="reason"><input type="radio" name="bundle_where" value="As a popup on a product page"> As a popup on a product page</label>
+          <label class="reason"><input type="radio" name="bundle_where" value="Somewhere else"> Somewhere else</label>
+        </div>
+        <label class="reason"><input type="checkbox" name="reason" value="It broke a page or something stopped working" data-followup="fu-link"> It broke a page or something stopped working</label>
         <label class="reason"><input type="checkbox" name="reason" value="Slowed down my browser"> It slowed down my browser</label>
         <label class="reason"><input type="checkbox" name="reason" value="I don't want the affiliate link"> I don't want the affiliate link</label>
         <label class="reason"><input type="checkbox" name="reason" value="Privacy concerns"> Privacy concerns</label>
@@ -81,6 +94,12 @@
         <label class="reason"><input type="checkbox" name="reason" value="I don't shop on AliExpress anymore"> I don't shop on AliExpress anymore</label>
         <label class="reason"><input type="checkbox" name="reason" value="Other"> Other</label>
       </fieldset>
+
+      <div class="followup" id="fu-link">
+        <label class="field" for="page_link">Link to a page where it happened <span>(optional, but it helps the most)</span></label>
+        <input id="page_link" name="page_link" type="url" maxlength="1000" placeholder="https://www.aliexpress.com/...">
+        <p class="hint">Open the page on AliExpress again and copy the address from the address bar. Without it I often can't reproduce the problem.</p>
+      </div>
 
       <label class="field" for="message">Anything else I should know? <span>(optional)</span></label>
       <textarea id="message" name="message" maxlength="2000" placeholder="What went wrong, or what would have made you stay?"></textarea>
@@ -116,6 +135,25 @@
   const form = document.getElementById('feedback');
   const send = document.getElementById('send');
   const status = document.getElementById('status');
+
+  // Follow-up questions: shown only while a reason that asks for them is ticked.
+  const followupReasons = [...form.querySelectorAll('input[data-followup]')];
+  function openFollowups() {
+    const open = new Set();
+    for (const box of followupReasons) {
+      if (box.checked) box.dataset.followup.split(' ').forEach((id) => open.add(id));
+    }
+    for (const el of form.querySelectorAll('.followup')) el.classList.toggle('open', open.has(el.id));
+  }
+  followupReasons.forEach((box) => box.addEventListener('change', openFollowups));
+  openFollowups();
+
+  // Answers inside a follow-up that was closed again are not sent.
+  function dropClosedFollowups(data) {
+    for (const el of form.querySelectorAll('.followup:not(.open)')) {
+      for (const field of el.querySelectorAll('[name]')) data.delete(field.name);
+    }
+  }
 
   function setStatus(text, kind) {
     status.textContent = text;
@@ -153,6 +191,8 @@
     const data = new FormData(form);
 
     if (data.get('_gotcha')) return; // a bot filled the hidden field
+    dropClosedFollowups(data);
+    if (!String(data.get('page_link') || '').trim()) data.delete('page_link');
 
     // Technical details, sent only with the feedback (nothing is sent if the
     // form isn't submitted). No IP address, no location from the device.
