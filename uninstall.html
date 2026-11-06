@@ -41,18 +41,11 @@
   .followup.open { display: block; }
   .followup .q { font-weight: 700; margin: 12px 0 2px; font-size: 0.95rem; }
   .followup .reason { padding: 5px 0; font-size: 0.95rem; }
-  #fu-link { margin-left: 0; padding-left: 0; border-left: 0; }
-  /* Option B: when "Bundle deals pages still showed up" is ticked, the link field
-     moves up into that reason's follow-up, as its next question. */
-  #fu-link.highlight { margin: 4px 0 0; padding: 0; border: 0; }
-  #fu-link.highlight label.field { margin-top: 12px; font-size: 0.95rem; }
-  #fu-link.highlight .lead { margin: 2px 0 0; font-size: 0.95rem; }
-  .when-bundle { display: none; }
-  #fu-link.highlight .when-bundle { display: block; }
-  #fu-link.highlight .when-other { display: none; }
-  #fu-link.highlight span.when-bundle { display: inline; }
-  label.field > span.when-bundle, label.field > span.when-other { font-weight: 700; color: var(--text); }
-  #fu-link.highlight input { border: 2px solid var(--accent); }
+  /* The page-link question sits right under the ticked reason that asks for it
+     ("Bundle deals pages still showed up" or "It broke a page..."). */
+  #fu-link label.field { margin-top: 12px; font-size: 0.95rem; }
+  #fu-link .lead { margin: 2px 0 0; font-size: 0.95rem; }
+  #fu-link input { border: 2px solid var(--accent); }
   .hint { color: var(--muted); font-size: 0.85rem; margin: 6px 0 0; }
   textarea, input[type="email"], input[type="url"] {
     width: 100%; margin-top: 6px; padding: 10px 12px; font: inherit; color: inherit;
@@ -89,7 +82,7 @@
     <form id="feedback" novalidate>
       <fieldset>
         <legend>Why did you uninstall it?</legend>
-        <label class="reason"><input type="checkbox" name="reason" value="Bundle deals pages still showed up" data-followup="fu-bundle fu-link"> Bundle deals pages still showed up</label>
+        <label class="reason"><input type="checkbox" name="reason" value="Bundle deals pages still showed up" data-followup="fu-bundle"> Bundle deals pages still showed up</label>
         <div class="followup" id="fu-bundle">
           <p class="q">Where did you see it?</p>
           <label class="reason"><input type="radio" name="bundle_where" value="After clicking a product in search"> After clicking a product in search</label>
@@ -97,7 +90,15 @@
           <label class="reason"><input type="radio" name="bundle_where" value="As a popup on a product page"> As a popup on a product page</label>
           <label class="reason"><input type="radio" name="bundle_where" value="Somewhere else"> Somewhere else</label>
         </div>
-        <label class="reason"><input type="checkbox" name="reason" value="It broke a page or something stopped working" data-followup="fu-link"> It broke a page or something stopped working</label>
+        <label class="reason"><input type="checkbox" name="reason" value="It broke a page or something stopped working" data-followup="fu-broke"> It broke a page or something stopped working</label>
+        <div class="followup" id="fu-broke">
+          <div id="fu-link">
+            <label class="field" for="page_link">Can you paste the page's address?</label>
+            <p class="lead">It would help enormously, and I'll fix it as soon as possible.</p>
+            <input id="page_link" name="page_link" type="url" maxlength="1000" placeholder="https://www.aliexpress.com/...">
+            <p class="hint">Closed the tab? It's in your history (Ctrl+H, or Cmd+Y on Mac).</p>
+          </div>
+        </div>
         <label class="reason"><input type="checkbox" name="reason" value="Slowed down my browser"> It slowed down my browser</label>
         <label class="reason"><input type="checkbox" name="reason" value="I don't want the affiliate link"> I don't want the affiliate link</label>
         <label class="reason"><input type="checkbox" name="reason" value="Privacy concerns"> Privacy concerns</label>
@@ -105,16 +106,6 @@
         <label class="reason"><input type="checkbox" name="reason" value="I don't shop on AliExpress anymore"> I don't shop on AliExpress anymore</label>
         <label class="reason"><input type="checkbox" name="reason" value="Other"> Other</label>
       </fieldset>
-
-      <div id="fu-link-home">
-      <div class="followup" id="fu-link">
-        <label class="field" for="page_link"><span class="when-other">Link to a page where it happened </span><span class="when-bundle">Can you paste the page's address?</span><span class="when-other">(optional, but it helps the most)</span></label>
-        <p class="lead when-bundle">It would help enormously, and I'll fix it as soon as possible.</p>
-        <input id="page_link" name="page_link" type="url" maxlength="1000" placeholder="https://www.aliexpress.com/...">
-        <p class="hint when-other">Open the page on AliExpress again and copy the address from the address bar. Without it I often can't reproduce the problem.</p>
-        <p class="hint when-bundle">Closed the tab? It's in your history (Ctrl+H, or Cmd+Y on Mac).</p>
-      </div>
-      </div>
 
       <label class="field" for="message">Anything else I should know? <span>(optional)</span></label>
       <textarea id="message" name="message" maxlength="2000" placeholder="What went wrong, or what would have made you stay?"></textarea>
@@ -158,16 +149,14 @@
     for (const box of followupReasons) {
       if (box.checked) box.dataset.followup.split(' ').forEach((id) => open.add(id));
     }
+    // One page-link question, shown right under the ticked reason that asks for it:
+    // under the bundle-deal follow-up when that reason is ticked, otherwise under
+    // "It broke a page...".
+    const bundleOpen = open.has('fu-bundle');
+    if (bundleOpen) open.delete('fu-broke');
     for (const el of form.querySelectorAll('.followup')) el.classList.toggle('open', open.has(el.id));
-    // Bundle deals still showing up: put the link field forward.
-    const bundleBox = form.querySelector('input[name="reason"][data-followup~="fu-bundle"]');
     const linkBox = document.getElementById('fu-link');
-    linkBox.classList.toggle('highlight', !!(bundleBox && bundleBox.checked));
-    // Option B: show the link field inside the bundle follow-up, right under
-    // "Where did you see it?"; back in its usual place for the other reasons.
-    const highlighted = !!(bundleBox && bundleBox.checked);
-    const home = document.getElementById('fu-link-home');
-    const target = highlighted ? document.getElementById('fu-bundle') : home;
+    const target = document.getElementById(bundleOpen ? 'fu-bundle' : 'fu-broke');
     if (linkBox.parentNode !== target) target.appendChild(linkBox);
   }
   followupReasons.forEach((box) => box.addEventListener('change', openFollowups));
