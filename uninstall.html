@@ -52,12 +52,11 @@
   #fu-link.highlight input { background: var(--card); border-color: var(--accent); }
   .callout-title { margin: 0; font-weight: 800; font-size: 1.05rem; }
   .callout-text { margin: 6px 0 0; }
-  .when-bundle, .when-search { display: none; }
+  .when-bundle { display: none; }
   #fu-link.highlight .when-bundle { display: block; }
   #fu-link.highlight .when-other { display: none; }
-  #fu-link.highlight.from-search .when-search { display: block; }
   #fu-link.highlight span.when-bundle { display: inline; }
-  label.field span.when-bundle, label.field span.when-other { font-weight: 700; color: var(--text); }
+  label.field > span.when-bundle, label.field > span.when-other { font-weight: 700; color: var(--text); }
   .hint { color: var(--muted); font-size: 0.85rem; margin: 6px 0 0; }
   textarea, input[type="email"], input[type="url"] {
     width: 100%; margin-top: 6px; padding: 10px 12px; font: inherit; color: inherit;
@@ -113,12 +112,11 @@
 
       <div class="followup" id="fu-link">
         <p class="callout-title when-bundle">The page address would help enormously</p>
-        <p class="callout-text when-bundle">AliExpress keeps changing its pages, and the address of the one you saw is usually all I need to find the problem. Paste it below and I'll fix it as soon as possible.</p>
-        <label class="field" for="page_link"><span class="when-other">Link to a page where it happened </span><span class="when-bundle">Address of the Bundle Deals page </span><span>(optional, but it helps the most)</span></label>
+        <p class="callout-text when-bundle">Paste it below and I'll fix it as soon as possible.</p>
+        <label class="field" for="page_link"><span class="when-other">Link to a page where it happened </span><span class="when-bundle">Address of the Bundle Deals page </span><span>(optional<span class="when-other">, but it helps the most</span>)</span></label>
         <input id="page_link" name="page_link" type="url" maxlength="1000" placeholder="https://www.aliexpress.com/...">
-        <p class="hint when-search">The address of the Bundle Deals page itself is best (it often contains <code>BundleDeals</code> or <code>/ssr/</code>). The product you clicked in the search results also helps.</p>
-        <p class="hint">Open the page on AliExpress again and copy the address from the address bar. Closed the tab? It is still in your browser history (Ctrl+H on Windows, Cmd+Y on Mac). Without it I often can't reproduce the problem.</p>
-        <p class="hint when-bundle">Can't find it? Tell me in the message box below what you searched for, and on which AliExpress site (country) you were.</p>
+        <p class="hint when-other">Open the page on AliExpress again and copy the address from the address bar. Without it I often can't reproduce the problem.</p>
+        <p class="hint when-bundle">Closed the tab? It's in your history (Ctrl+H, or Cmd+Y on Mac).</p>
       </div>
 
       <label class="field" for="message">Anything else I should know? <span>(optional)</span></label>
@@ -166,13 +164,10 @@
     for (const el of form.querySelectorAll('.followup')) el.classList.toggle('open', open.has(el.id));
     // Bundle deals still showing up: put the link field forward.
     const bundleBox = form.querySelector('input[name="reason"][data-followup~="fu-bundle"]');
-    const fromSearch = form.querySelector('input[name="bundle_where"][value="After clicking a product in search"]');
     const linkBox = document.getElementById('fu-link');
     linkBox.classList.toggle('highlight', !!(bundleBox && bundleBox.checked));
-    linkBox.classList.toggle('from-search', !!(fromSearch && fromSearch.checked));
   }
   followupReasons.forEach((box) => box.addEventListener('change', openFollowups));
-  form.querySelectorAll('input[name="bundle_where"]').forEach((r) => r.addEventListener('change', openFollowups));
   openFollowups();
 
   // Answers inside a follow-up that was closed again are not sent.
