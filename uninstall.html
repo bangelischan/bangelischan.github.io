@@ -42,21 +42,20 @@
   .followup .q { font-weight: 700; margin: 12px 0 2px; font-size: 0.95rem; }
   .followup .reason { padding: 5px 0; font-size: 0.95rem; }
   #fu-link { margin-left: 0; padding-left: 0; border-left: 0; }
-  /* When "Bundle deals pages still showed up" is ticked, the link field becomes a
-     highlighted box: the page address is what lets me reproduce and fix the problem. */
-  #fu-link.highlight {
-    margin: 22px 0 0; padding: 16px 18px 18px; border: 2px solid var(--accent); border-radius: 14px;
-    background: color-mix(in srgb, var(--accent) 7%, transparent);
+  /* Option A: when "Bundle deals pages still showed up" is ticked, the link field
+     gets a red side bar and a "Helps the most" tag. */
+  #fu-link.highlight { margin-top: 22px; padding: 2px 0 4px 16px; border-left: 4px solid var(--accent); }
+  #fu-link.highlight label.field { margin-top: 4px; }
+  label.field .tag {
+    display: inline-block; margin-left: 6px; padding: 1px 9px; border-radius: 999px; vertical-align: 1px;
+    font-size: 0.75rem; font-weight: 700; color: #fff; background: var(--accent);
   }
-  #fu-link.highlight label.field { margin-top: 6px; }
-  #fu-link.highlight input { background: var(--card); border-color: var(--accent); }
-  .callout-title { margin: 0; font-weight: 800; font-size: 1.05rem; }
-  .callout-text { margin: 6px 0 0; }
   .when-bundle { display: none; }
   #fu-link.highlight .when-bundle { display: block; }
   #fu-link.highlight .when-other { display: none; }
   #fu-link.highlight span.when-bundle { display: inline; }
   label.field > span.when-bundle, label.field > span.when-other { font-weight: 700; color: var(--text); }
+  #fu-link.highlight input { border: 2px solid var(--accent); }
   .hint { color: var(--muted); font-size: 0.85rem; margin: 6px 0 0; }
   textarea, input[type="email"], input[type="url"] {
     width: 100%; margin-top: 6px; padding: 10px 12px; font: inherit; color: inherit;
@@ -111,12 +110,10 @@
       </fieldset>
 
       <div class="followup" id="fu-link">
-        <p class="callout-title when-bundle">The page address would help enormously</p>
-        <p class="callout-text when-bundle">Paste it below and I'll fix it as soon as possible.</p>
-        <label class="field" for="page_link"><span class="when-other">Link to a page where it happened </span><span class="when-bundle">Address of the Bundle Deals page </span><span>(optional<span class="when-other">, but it helps the most</span>)</span></label>
+        <label class="field" for="page_link"><span class="when-other">Link to a page where it happened </span><span class="when-bundle">Link to the Bundle Deals page<span class="tag">Helps the most</span></span><span class="when-other">(optional, but it helps the most)</span></label>
         <input id="page_link" name="page_link" type="url" maxlength="1000" placeholder="https://www.aliexpress.com/...">
         <p class="hint when-other">Open the page on AliExpress again and copy the address from the address bar. Without it I often can't reproduce the problem.</p>
-        <p class="hint when-bundle">Closed the tab? It's in your history (Ctrl+H, or Cmd+Y on Mac).</p>
+        <p class="hint when-bundle">With the link I can fix it fast. Closed the tab? Find it in your history (Ctrl+H, or Cmd+Y on Mac).</p>
       </div>
 
       <label class="field" for="message">Anything else I should know? <span>(optional)</span></label>
